@@ -11,14 +11,14 @@ import shutil
 import json
 
 # ============ 版本配置（每次更新时修改这里） ============
-VERSION = "1.1.7"                    # 客户端版本号
-RELEASE_TAG = "v1.1.7-v1.0.4"        # GitHub Release 的 tag（如 v客户端-v服务器）
-CHANGELOG = "v1.1.7 更新内容:\n- 修复更新弹窗问题\n- 优化下载流程"
+VERSION = "1.1.8"                    # 客户端版本号
+RELEASE_TAG = f"v{VERSION}"          # GitHub Release 的 tag（格式: v1.1.8）
+CHANGELOG = "更新内容:\n- 修复更新弹窗问题\n- 优化下载流程"
 # =========================================================
 
 # GitHub 配置（一般不需要修改）
 GITHUB_USER = "eroubisu"
-GITHUB_REPO = "game"
+GITHUB_REPO = "GameLobby-Client"
 UPDATE_SERVER = f"https://raw.githubusercontent.com/{GITHUB_USER}/{GITHUB_REPO}/main/client"
 VERSION_FILE = "/version.json"
 
@@ -114,12 +114,6 @@ def sync_version():
         f'VERSION_FILE = "{VERSION_FILE}"',
         content
     )
-    # 更新 DOWNLOAD_PATH
-    content = re.sub(
-        r'DOWNLOAD_PATH = "[^"]*"',
-        f'DOWNLOAD_PATH = "{DOWNLOAD_PATH}"',
-        content
-    )
     
     with open(config_file, 'w', encoding='utf-8') as f:
         f.write(content)
@@ -174,7 +168,6 @@ def build():
     
     # 添加数据文件
     cmd.append(f"--add-data=client;client")
-    cmd.append(f"--add-data=games;games")
     
     # 隐藏导入
     cmd.extend([

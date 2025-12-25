@@ -22,7 +22,7 @@ def _get_client_version():
 VERSION = _get_client_version()
 
 # 自动更新配置
-UPDATE_SERVER = "https://raw.githubusercontent.com/eroubisu/game/main/client"  # 更新服务器地址
+UPDATE_SERVER = "https://raw.githubusercontent.com/eroubisu/GameLobby-Client/main/client"  # 更新服务器地址
 VERSION_FILE = "/version.json"  # 版本信息文件
 DOWNLOAD_PATH = ""  # 下载路径
 

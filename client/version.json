@@ -1,5 +1,5 @@
 {
-  "version": "1.1.6",
-  "download_url": "https://github.com/eroubisu/game/releases/download/v1.1.6/game_v1.1.6.exe",
-  "changelog": "v1.1.6 更新"
+  "version": "1.1.8",
+  "download_url": "https://github.com/eroubisu/GameLobby-Client/releases/download/v1.1.8/game_v1.1.8.exe",
+  "changelog": "更新内容:\n- 修复更新弹窗问题\n- 优化下载流程"
 }
