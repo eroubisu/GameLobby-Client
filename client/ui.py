@@ -19,8 +19,8 @@ from .config import (
 )
 from .avatar_editor import AvatarDisplay, data_to_pixels, AVATAR_SIZE
 
-# 统一UI字体
-UI_FONT = 'Microsoft YaHei UI'
+# 统一UI字体（运行时由config.init_fonts设置）
+UI_FONT = 'Sarasa UI SC'
 
 
 # 麻将牌桌颜色 - 使用主题色
@@ -1201,6 +1201,8 @@ class GameUI:
             bg=COLOR_BG_PRIMARY, fg=COLOR_FG_PRIMARY
         )
         text_widget.grid(row=0, column=0, sticky='nsew')
+        # PowerShell风格提示符标签
+        text_widget.tag_config('prompt', foreground='#FFDD44')
         
         self.cmd_windows[window_id] = {
             'frame': content_frame,
@@ -1461,15 +1463,16 @@ class GameUI:
                     self.cmd_history.pop(0)
             self.cmd_history_index = -1
             
-            # 回显用户输入（终端风格）
-            self.add_game_message(f"> {text}", to_main=False)
+            # 回显用户输入（PowerShell风格）
+            location = self.get_location_path()
+            self._echo_prompt(f"PS {location}> ", text)
             
             self.on_command(text)
             self.cmd_entry.delete(0, 'end')
             # 需要打牌时用 /d，否则用 /
             # 但如果刚输入的是特殊命令（如 /exit），保持 / 前缀
             if self.logged_in:
-                special_cmds = ['/exit', '/quit', '/back', '/y', '/n']
+                special_cmds = ['/exit', '/quit', '/back', '/home', '/y', '/n']
                 if self.need_discard and not any(text.lower().startswith(c) for c in special_cmds):
                     self.cmd_entry.insert(0, '/d ')
                 else:
@@ -1480,6 +1483,17 @@ class GameUI:
         self.logged_in = True
         self.cmd_entry.delete(0, 'end')
         self.cmd_entry.insert(0, '/')
+    
+    def _echo_prompt(self, prompt, command):
+        """PowerShell风格回显：提示符黄色，命令白色"""
+        target = self.current_cmd_window
+        if target in self.cmd_windows:
+            tw = self.cmd_windows[target]['text']
+            tw.config(state='normal')
+            tw.insert('end', prompt, 'prompt')
+            tw.insert('end', f"{command}\n")
+            tw.config(state='disabled')
+            tw.see('end')
     
     def set_mahjong_mode(self, enabled):
         """设置麻将游戏模式（用于退出确认判断）"""

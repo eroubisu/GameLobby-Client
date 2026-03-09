@@ -28,7 +28,7 @@ DOWNLOAD_PATH = ""  # 下载路径
 
 # 网络配置
 PORT = 5555
-DEFAULT_HOST = "8.130.103.89"
+DEFAULT_HOST = "112.126.80.53"
 
 # UI 配置
 WINDOW_TITLE = "游戏大厅"
@@ -125,8 +125,10 @@ def enable_dpi_awareness():
     get_screen_info()
 
 # ============ 字体配置 ============
-# 字体优先级列表（优先使用微软雅黑）
+# 字体优先级列表（优先使用更纱黑体）
 FONT_FAMILIES = [
+    'Sarasa UI SC',         # 更纱黑体 UI
+    'Sarasa Gothic SC',     # 更纱黑体
     'Microsoft YaHei UI',   # 微软雅黑 UI
     'Microsoft YaHei',      # 微软雅黑
     'Segoe UI',             # Windows 默认
@@ -135,7 +137,8 @@ FONT_FAMILIES = [
 ]
 
 FONT_MONO_FAMILIES = [
-    'Microsoft YaHei UI',   # 微软雅黑 UI（更统一）
+    'Sarasa Mono SC',       # 更纱等宽
+    'Sarasa Fixed SC',      # 更纱固定宽度
     'Consolas',
     'Cascadia Mono',
     'Courier New',
@@ -185,14 +188,14 @@ def init_fonts(root):
     
     return FONT_UI_FAMILY, FONT_MONO_FAMILY
 
-# 临时默认值 - 统一使用微软雅黑
-FONT_CHAT = ('Microsoft YaHei UI', 10)
-FONT_GAME = ('Microsoft YaHei UI', 10)
-FONT_MAP = ('Microsoft YaHei UI', 10)
-FONT_STATUS = ('Microsoft YaHei UI', 10)
-FONT_BUTTON = ('Microsoft YaHei UI', 10)
-FONT_LABEL = ('Microsoft YaHei UI', 10)
-FONT_TITLE = ('Microsoft YaHei UI', 22, 'bold')
+# 临时默认值 - 统一使用更纱黑体（回退微软雅黑）
+FONT_CHAT = ('Sarasa UI SC', 10)
+FONT_GAME = ('Sarasa UI SC', 10)
+FONT_MAP = ('Sarasa UI SC', 10)
+FONT_STATUS = ('Sarasa UI SC', 10)
+FONT_BUTTON = ('Sarasa UI SC', 10)
+FONT_LABEL = ('Sarasa UI SC', 10)
+FONT_TITLE = ('Sarasa UI SC', 22, 'bold')
 
 # Win11 风格配色
 # 背景色
