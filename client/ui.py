@@ -1461,6 +1461,9 @@ class GameUI:
                     self.cmd_history.pop(0)
             self.cmd_history_index = -1
             
+            # 回显用户输入（终端风格）
+            self.add_game_message(f"> {text}", to_main=False)
+            
             self.on_command(text)
             self.cmd_entry.delete(0, 'end')
             # 需要打牌时用 /d，否则用 /

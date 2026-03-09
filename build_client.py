@@ -11,8 +11,8 @@ import shutil
 import json
 
 # ============ 版本配置（每次更新时修改这里） ============
-VERSION = "1.1.8"                    # 客户端版本号
-RELEASE_TAG = f"v{VERSION}"          # GitHub Release 的 tag（格式: v1.1.8）
+VERSION = "1.1.9"                    # 客户端版本号
+RELEASE_TAG = f"v{VERSION}"          # GitHub Release 的 tag
 CHANGELOG = "更新内容:\n- 修复更新弹窗问题\n- 优化下载流程"
 # =========================================================
 
