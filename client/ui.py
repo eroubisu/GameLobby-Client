@@ -243,6 +243,7 @@ class ModernButton(tk.Canvas):
         
         self._pressed = False
         self._hovered = False
+        self._disabled = False
         
         self.bind('<Enter>', self._on_enter)
         self.bind('<Leave>', self._on_leave)
@@ -251,6 +252,15 @@ class ModernButton(tk.Canvas):
         self.bind('<Configure>', lambda e: self._draw())
         
         self._draw()
+    
+    def set_disabled(self, disabled):
+        self._disabled = disabled
+        if disabled:
+            self._draw(COLOR_BG_TERTIARY)
+            self.config(cursor='')
+        else:
+            self._draw(self.bg_normal)
+            self.config(cursor='')
     
     def _draw(self, bg=None):
         self.delete('all')
@@ -272,8 +282,9 @@ class ModernButton(tk.Canvas):
             text_y = h // 2 - 2
         
         # 绘制文字
+        fg = COLOR_FG_TERTIARY if self._disabled else self.fg_color
         self.create_text(text_x, text_y, text=self._text, 
-                        fill=self.fg_color, font=self.font, anchor='center')
+                        fill=fg, font=self.font, anchor='center')
     
     def _create_rounded_rect(self, x1, y1, x2, y2, r, **kwargs):
         """绘制圆角矩形 - 使用多点模拟圆弧确保圆角对称"""
@@ -317,19 +328,27 @@ class ModernButton(tk.Canvas):
         return self.create_polygon(points, smooth=False, **kwargs)
     
     def _on_enter(self, event):
+        if self._disabled:
+            return
         self._hovered = True
         self.configure(cursor='hand2')
         self._draw(self.bg_hover)
     
     def _on_leave(self, event):
         self._hovered = False
+        if self._disabled:
+            return
         self._draw(self.bg_normal)
     
     def _on_press(self, event):
+        if self._disabled:
+            return
         self._pressed = True
         self._draw(self.bg_press)
     
     def _on_release(self, event):
+        if self._disabled:
+            return
         if self._pressed and self.command:
             self.command()
         self._pressed = False
@@ -838,6 +857,9 @@ class LoginUI:
         self.on_connect = on_connect
         self.frame = None
         self.ip_entry = None
+        self.connect_btn = None
+        self.status_label = None
+        self._update_ready = False
         
         root.configure(bg=COLOR_BG_PRIMARY)
         
@@ -859,7 +881,7 @@ class LoginUI:
         title.grid(row=0, column=0, columnspan=2, pady=(0, 40))
         
         # 卡片容器 (使用 RoundedFrame)
-        card_container = RoundedFrame(self.frame, width=420, height=260, radius=RADIUS_LARGE)
+        card_container = RoundedFrame(self.frame, width=420, height=300, radius=RADIUS_LARGE)
         card_container.grid(row=1, column=0, columnspan=2)
         card = card_container.inner
         card.configure(padx=35, pady=30)
@@ -875,20 +897,46 @@ class LoginUI:
         self.ip_entry.pack(fill='x')
         self.ip_entry.insert(0, DEFAULT_HOST)
         
-        # 连接按钮 - 居中显示
+        # 连接按钮 - 居中显示（初始禁用）
         btn_frame = tk.Frame(card, bg=COLOR_BG_SECONDARY)
         btn_frame.pack(fill='x', pady=(30, 0))
         
-        connect_btn = ModernButton(
+        self.connect_btn = ModernButton(
             btn_frame, text="连接服务器", accent=True,
             width=350, height=52, font=FONT_BUTTON,
             command=self._on_connect
         )
-        connect_btn.pack(anchor='center')
+        self.connect_btn.pack(anchor='center')
+        self.connect_btn.set_disabled(True)
+        
+        # 状态提示标签
+        self.status_label = tk.Label(
+            card, text="检查更新中……",
+            font=(FONT_LABEL[0], 9), bg=COLOR_BG_SECONDARY, fg=COLOR_FG_TERTIARY
+        )
+        self.status_label.pack(pady=(10, 0))
         
         self.ip_entry.bind('<Return>', lambda e: self._on_connect())
     
+    def set_disabled(self, disabled):
+        """Compatibility: ModernButton has set_disabled"""
+        self.connect_btn.set_disabled(disabled)
+    
+    def enable_connect(self):
+        """更新检查完成，启用连接按钮"""
+        self._update_ready = True
+        self.connect_btn.set_disabled(False)
+        self.status_label.config(text="✓ 已是最新版本", fg='#6ccb5f')
+    
+    def set_update_status(self, text, color=None):
+        """设置更新状态文字"""
+        if self.status_label:
+            self.status_label.config(text=text, fg=color or COLOR_FG_TERTIARY)
+    
     def _on_connect(self):
+        if not self._update_ready:
+            return
+        from .config import DEFAULT_HOST
         ip = self.ip_entry.get().strip() or DEFAULT_HOST
         self.on_connect(ip)
     

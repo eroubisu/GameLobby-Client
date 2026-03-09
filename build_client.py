@@ -11,9 +11,9 @@ import shutil
 import json
 
 # ============ 版本配置（每次更新时修改这里） ============
-VERSION = "1.1.10"                    # 客户端版本号
+VERSION = "1.1.11"                    # 客户端版本号
 RELEASE_TAG = f"v{VERSION}"          # GitHub Release 的 tag
-CHANGELOG = "更新内容:\n- 修复一些问题"
+CHANGELOG = "更新内容:\n- 修复首页的问题"
 # =========================================================
 
 # GitHub 配置（一般不需要修改）

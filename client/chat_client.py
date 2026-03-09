@@ -40,21 +40,49 @@ class ChatClient:
         # 初始化字体（检测可用字体）
         init_fonts(self.root)
         
-        # 检查更新
-        self._check_update()
-        
         self.login_ui = None
         self.game_ui = None
         
+        # 先显示登录界面（按钮禁用）
         self.login_ui = LoginUI(self.root, self._on_connect)
+        
+        # 后台检查更新
+        self._check_update_async()
     
-    def _check_update(self):
-        """启动时检查更新"""
-        try:
-            from .updater import check_and_prompt_update
-            check_and_prompt_update(self.root)
-        except Exception as e:
-            print(f"检查更新时出错: {e}")
+    def _check_update_async(self):
+        """后台检查更新，完成后在主线程启用连接按钮"""
+        import threading
+        
+        def _do_check():
+            try:
+                from .updater import check_for_update, UpdateDialog
+                has_update, latest_version, download_url, changelog = check_for_update()
+                
+                if has_update:
+                    # 需要更新 - 在主线程显示更新对话框
+                    self.root.after(0, lambda: self._show_update_dialog(
+                        latest_version, changelog, download_url))
+                else:
+                    # 已是最新版本 - 启用连接按钮
+                    self.root.after(0, self._on_update_check_ok)
+            except Exception as e:
+                print(f"检查更新时出错: {e}")
+                # 出错时也允许连接
+                self.root.after(0, self._on_update_check_ok)
+        
+        threading.Thread(target=_do_check, daemon=True).start()
+    
+    def _on_update_check_ok(self):
+        """更新检查通过，启用连接按钮"""
+        if self.login_ui:
+            self.login_ui.enable_connect()
+    
+    def _show_update_dialog(self, latest_version, changelog, download_url):
+        """显示更新对话框"""
+        from .updater import UpdateDialog
+        if self.login_ui:
+            self.login_ui.set_update_status("发现新版本，请更新", '#ff6b6b')
+        UpdateDialog(self.root, latest_version, changelog, download_url)
     
     def _on_connect(self, ip):
         try:
