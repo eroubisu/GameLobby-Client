@@ -1,0 +1,12 @@
+__pycache__/
+
+# 打包产物
+build/
+dist/
+*.spec
+game_v*.exe
+client/version.txt
+
+# Python
+*.pyc
+*.pyo

@@ -29,6 +29,35 @@ COLOR_TABLE_BORDER = COLOR_BORDER
 COLOR_SEAT_EMPTY = COLOR_BG_SECONDARY
 COLOR_SEAT_OCCUPIED = COLOR_ACCENT
 
+# 牌类型颜色
+TILE_COLORS = {
+    '万': '#FF6B6B',  # 万子 - 红色
+    '条': '#7ED321',  # 条子 - 绿色
+    '筒': '#5DADE2',  # 筒子 - 蓝色
+    '风': '#F7DC6F',  # 风牌 - 黄色
+    '元': '#BB8FCE',  # 三元牌 - 紫色
+}
+
+def get_tile_color(tile, default=COLOR_FG_PRIMARY):
+    """根据牌的类型返回颜色"""
+    for key, color in TILE_COLORS.items():
+        if key in tile:
+            return color
+    if tile in ['东', '南', '西', '北']:
+        return TILE_COLORS['风']
+    if tile in ['中', '发', '白']:
+        return TILE_COLORS['元']
+    return default
+
+def rounded_rect_points(x1, y1, x2, y2, r):
+    """生成圆角矩形的多边形点列表（用于Canvas.create_polygon smooth=True）"""
+    r = min(r, (x2 - x1) / 2, (y2 - y1) / 2)
+    return [
+        x1+r, y1, x2-r, y1, x2, y1, x2, y1+r,
+        x2, y2-r, x2, y2, x2-r, y2, x1+r, y2,
+        x1, y2, x1, y2-r, x1, y1+r, x1, y1, x1+r, y1
+    ]
+
 
 # ============ WinUI 3 风格组件 ============
 
@@ -63,22 +92,7 @@ class RoundedFrame(tk.Canvas):
     
     def create_rounded_rect(self, x1, y1, x2, y2, r, **kwargs):
         """绘制圆角矩形"""
-        points = [
-            x1+r, y1,
-            x2-r, y1,
-            x2, y1,
-            x2, y1+r,
-            x2, y2-r,
-            x2, y2,
-            x2-r, y2,
-            x1+r, y2,
-            x1, y2,
-            x1, y2-r,
-            x1, y1+r,
-            x1, y1,
-            x1+r, y1,
-        ]
-        return self.create_polygon(points, smooth=True, **kwargs)
+        return self.create_polygon(rounded_rect_points(x1, y1, x2, y2, r), smooth=True, **kwargs)
 
 
 class ModernScrolledText(tk.Frame):
@@ -169,12 +183,7 @@ class ModernScrollbar(tk.Canvas):
         r = min(r, (x2-x1)//2, (y2-y1)//2)
         if r < 2:
             r = 2
-        points = [
-            x1+r, y1, x2-r, y1, x2, y1, x2, y1+r,
-            x2, y2-r, x2, y2, x2-r, y2, x1+r, y2,
-            x1, y2, x1, y2-r, x1, y1+r, x1, y1, x1+r, y1
-        ]
-        return self.create_polygon(points, smooth=True, **kwargs)
+        return self.create_polygon(rounded_rect_points(x1, y1, x2, y2, r), smooth=True, **kwargs)
     
     def _set_thumb_color(self, color):
         self.thumb_color = color
@@ -405,13 +414,8 @@ class NavButton(tk.Canvas):
         r = min(r, (x2-x1)/2, (y2-y1)/2)
         if r < 1:
             return self.create_rectangle(x1, y1, x2, y2, **kwargs)
-        points = [
-            x1+r, y1, x2-r, y1, x2, y1, x2, y1+r,
-            x2, y2-r, x2, y2, x2-r, y2, x1+r, y2,
-            x1, y2, x1, y2-r, x1, y1+r, x1, y1, x1+r, y1
-        ]
-        return self.create_polygon(points, smooth=True, **kwargs)
-    
+        return self.create_polygon(rounded_rect_points(x1, y1, x2, y2, r), smooth=True, **kwargs)
+
     def _on_enter(self, event):
         self._hovered = True
         self.configure(cursor='hand2')
@@ -437,15 +441,6 @@ class MahjongTableView(tk.Canvas):
         '北': '#9C27B0',  # 紫色
     }
     
-    # 牌类型颜色
-    TILE_COLORS = {
-        '万': '#FF6B6B',  # 万子 - 红色
-        '条': '#7ED321',  # 条子 - 绿色
-        '筒': '#5DADE2',  # 筒子 - 蓝色
-        '风': '#F7DC6F',  # 风牌 - 黄色
-        '元': '#BB8FCE',  # 三元牌 - 紫色
-    }
-    
     def __init__(self, parent, **kwargs):
         super().__init__(parent, highlightthickness=0, bg=COLOR_BG_SECONDARY, **kwargs)
         self.room_data = None
@@ -458,21 +453,6 @@ class MahjongTableView(tk.Canvas):
         self.bind('<Button-4>', self._on_mousewheel)  # Linux
         self.bind('<Button-5>', self._on_mousewheel)  # Linux
         self.bind('<Motion>', self._on_motion)
-    
-    def _get_tile_color_for_canvas(self, tile):
-        """根据牌的类型返回颜色"""
-        if '万' in tile:
-            return self.TILE_COLORS['万']
-        elif '条' in tile:
-            return self.TILE_COLORS['条']
-        elif '筒' in tile:
-            return self.TILE_COLORS['筒']
-        elif tile in ['东', '南', '西', '北']:
-            return self.TILE_COLORS['风']
-        elif tile in ['中', '发', '白']:
-            return self.TILE_COLORS['元']
-        else:
-            return COLOR_FG_SECONDARY
     
     def _on_motion(self, event):
         """跟踪鼠标位置，确定悬停在哪一列"""
@@ -744,7 +724,7 @@ class MahjongTableView(tk.Canvas):
                     if data['is_last']:
                         tile_color = COLOR_ACCENT
                     else:
-                        tile_color = self._get_tile_color_for_canvas(data['text'])
+                        tile_color = get_tile_color(data['text'], COLOR_FG_SECONDARY)
                     self.create_text(col_center, ty + tile_h//2,
                                    text=data['text'], font=(UI_FONT, 10),
                                    fill=tile_color)
@@ -809,12 +789,7 @@ class MahjongTableView(tk.Canvas):
         r = min(r, (x2-x1)/2, (y2-y1)/2)
         if r < 1:
             return self.create_rectangle(x1, y1, x2, y2, **kwargs)
-        points = [
-            x1+r, y1, x2-r, y1, x2, y1, x2, y1+r,
-            x2, y2-r, x2, y2, x2-r, y2, x1+r, y2,
-            x1, y2, x1, y2-r, x1, y1+r, x1, y1, x1+r, y1
-        ]
-        return self.create_polygon(points, smooth=True, **kwargs)
+        return self.create_polygon(rounded_rect_points(x1, y1, x2, y2, r), smooth=True, **kwargs)
 
 
 class ModernEntry(tk.Frame):
@@ -1726,24 +1701,9 @@ Lv.{p.get('level', 1)}
             self.need_discard = True
             self.set_cmd_prefix('/d ')
     
-    def _get_tile_color(self, tile):
-        """根据牌的类型返回颜色"""
-        if '万' in tile:
-            return '#FF6B6B'  # 万子 - 红色
-        elif '条' in tile:
-            return '#7ED321'  # 条子 - 绿色
-        elif '筒' in tile:
-            return '#5DADE2'  # 筒子 - 蓝色
-        elif tile in ['东', '南', '西', '北']:
-            return '#F7DC6F'  # 风牌 - 黄色
-        elif tile in ['中', '发', '白']:
-            return '#BB8FCE'  # 三元牌 - 紫色
-        else:
-            return COLOR_FG_PRIMARY  # 默认色
-    
     def _insert_colored_tile(self, tile, suffix='', bold=False):
         """插入带颜色的牌"""
-        color = self._get_tile_color(tile)
+        color = get_tile_color(tile)
         tag_name = f'tile_{color}'
         font = (UI_FONT, 10, 'bold') if bold else (UI_FONT, 10)
         self.status_text.tag_config(tag_name, foreground=color, font=font)
